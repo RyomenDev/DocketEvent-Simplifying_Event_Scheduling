@@ -1,12 +1,5 @@
-// import Header from "./Header/Header";
-// import Footer from "./Footer/Footer";
-// import LogoutBtn from "./Header/LogoutBtn";
+import Header from "./Header/Header";
+import Footer from "./Footer/Footer";
+import Home from "./Home/Home.jsx";
 
-import Login from "./Login";
-import Input from "./Input";
-export {
-  // Header,
-  // Footer,
-  Input,
-  Login,
-};
+export { Header, Footer, Home };

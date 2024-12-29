@@ -6,6 +6,6 @@ import { loginUser } from "../controllers/auth.controller.js"; // Import the log
 const router = express.Router();
 
 // Protected Route - Login Route
-router.post("/login", verifyToken, loginUser); // Calls the loginUser controller
+router.post("/login-with-firebase", verifyToken, loginUser); // Calls the loginUser controller
 
 export default router;

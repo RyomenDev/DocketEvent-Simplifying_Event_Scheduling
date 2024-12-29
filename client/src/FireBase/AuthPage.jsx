@@ -29,11 +29,6 @@ const AuthPage = () => {
       <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg space-y-6">
         {/* Role Selection */}
         <div className="space-y-4">
-          {/* <h2 className="text-xl font-semibold text-center text-gray-700">
-            {isSignUp
-              ? "Select Your Role to Sign Up"
-              : "Select Your Role to Login"}
-          </h2> */}
           <button
             onClick={() => handleRoleSelection("student")}
             className={`w-full py-3 font-semibold rounded-lg shadow-md transition duration-200 ${
@@ -79,7 +74,11 @@ const AuthPage = () => {
             isSignUp={isSignUp}
             setIsSignUp={setIsSignUp}
           />
-          <LoginWithGoogle role={role} setErrorMessage={setErrorMessage} />
+
+          {/* Conditionally render LoginWithGoogle based on role */}
+          {role !== "mentor" && (
+            <LoginWithGoogle role={role} setErrorMessage={setErrorMessage} />
+          )}
         </div>
 
         {/* Toggle between Login and Sign Up */}

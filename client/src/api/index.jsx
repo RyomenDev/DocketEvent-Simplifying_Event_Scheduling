@@ -1,3 +1,3 @@
-import { LoginUser } from "./authApi.jsx";
+import { loginWithFirebaseToken } from "./authApi.jsx";
 
-export { LoginUser };
+export { loginWithFirebaseToken };

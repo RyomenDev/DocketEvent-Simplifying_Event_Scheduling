@@ -2,6 +2,8 @@ import admin from "../conf/firebase-admin-config.js";
 
 // Middleware to verify Firebase ID Token
 export async function verifyToken(req, res, next) {
+  console.log("middleware");
+
   const idToken = req.headers.authorization?.split(" ")[1]; // Extract token from Authorization header
 
   if (!idToken) {

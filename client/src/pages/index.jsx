@@ -1,4 +1,5 @@
 import LoginPage from "./LoginPage";
-import NotFoundPage from "./Errors/NotFoundPage"
+import NotFoundPage from "./Errors/NotFoundPage";
+import HomePage from "./HomePage";
 
-export { LoginPage,NotFoundPage };
+export { LoginPage, NotFoundPage, HomePage };

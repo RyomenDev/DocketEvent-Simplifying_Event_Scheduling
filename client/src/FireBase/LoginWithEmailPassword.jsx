@@ -3,11 +3,13 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
+  sendEmailVerification,
 } from "firebase/auth";
 import { auth } from "./firebase-config";
 import { useNavigate } from "react-router-dom";
-import { login as authLogin } from "../store/authSlice";
 import { handleApiError } from "../utils/handleApiError";
+import { useDispatch } from "react-redux";
+import { loginUser } from "./Login";
 
 const LoginWithEmailPassword = ({
   role,
@@ -15,8 +17,10 @@ const LoginWithEmailPassword = ({
   isSignUp,
   setIsSignUp,
 }) => {
+  const userRole = role;
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleAuthError = (error) => {
     console.error("Authentication error:", error); // Log the error object for debugging
@@ -47,15 +51,17 @@ const LoginWithEmailPassword = ({
         email,
         password
       );
-      const user = userCredential.user;
-      console.log("Logged in user:", user);
-      //    const userData = await LoginUser(token, navigate);
-      //    dispatch(authLogin(userData?.user));
+      // console.log(userCredential);
+      // console.log(userCredential._tokenResponse);
 
+      const user = userCredential.user;
+      //   console.log(user);
       if (!user.emailVerified) {
         setErrorMessage("Please verify your email before logging in.");
         return;
       }
+      const firebase_Token = await userCredential.user.getIdToken();
+      loginUser(firebase_Token, dispatch, navigate, setErrorMessage, userRole);
     } catch (error) {
       handleAuthError(error);
     } finally {
@@ -68,7 +74,6 @@ const LoginWithEmailPassword = ({
     const email = e.target.email.value;
     const password = e.target.password.value;
     const username = e.target.username.value;
-    const userRole = role;
 
     console.log("Sign-up attempt for email:", email);
 
@@ -85,6 +90,7 @@ const LoginWithEmailPassword = ({
       // Set user profile details like username
       await updateProfile(user, { displayName: username });
       console.log("User profile updated with username:", username);
+      await sendEmailVerification(user);
       setErrorMessage("");
       setIsSignUp(false); // Switch back to login after successful signup
     } catch (error) {

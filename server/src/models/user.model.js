@@ -20,6 +20,12 @@ const userSchema = new Schema(
     picture: {
       type: String,
       required: false,
+      default: function () {
+        // Use the 'name' field to generate the default picture URL
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          this.name
+        )}`;
+      },
     },
     age: {
       type: Number,
@@ -30,18 +36,18 @@ const userSchema = new Schema(
       type: String,
       enum: ["male", "female", "other"],
       required: false,
-      default: null, // Default to null if not provided
+      default: null,
     },
     address: {
       type: String,
       required: false,
-      default: null, // Default to null if not provided
+      default: null,
     },
     phone: {
       type: String,
-      required: false, // Optional phone number field
+      required: false,
       match: [/^\d{10}$/, "Please enter a valid 10-digit phone number"],
-      default: null, // Default to null if not provided
+      default: null,
     },
   },
   {
@@ -50,9 +56,3 @@ const userSchema = new Schema(
 );
 
 export const User = mongoose.model("User", userSchema);
-
-// Subscription: {
-//       type: Boolean,
-//       required: true,
-//       default: false,
-//     },
