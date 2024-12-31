@@ -1,12 +1,17 @@
 import { useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import Toast from "../utils/toaster";
+import { scheduleInterview } from "../api/index";
+import { useNavigate } from "react-router-dom";
 
 const CalendlyBooking = () => {
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState("");
+  const [topic, setTopic] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState("default");
 
   const timeSlots = [
     "9:00 PM - 09:30 PM",
@@ -17,9 +22,9 @@ const CalendlyBooking = () => {
     "11:30 PM - 12:00 PM",
   ];
 
-  const currentDate = new Date(); // Get the current date
+  const currentDate = new Date();
   const maxDate = new Date();
-  maxDate.setDate(currentDate.getDate() + 14); // Set max date to 14 days from now
+  maxDate.setDate(currentDate.getDate() + 14);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -29,74 +34,108 @@ const CalendlyBooking = () => {
     setSelectedTime(e.target.value);
   };
 
-  const notify = (date, time) => {
-    if (date && time) toast(`Interview scheduled on ${date} at ${time}`);
-    else toast(`Please select both a date and a time slot.`);
+  const handleTopicChange = (e) => {
+    setTopic(e.target.value);
   };
 
-  const handleSubmit = () => {
-    if (selectedDate && selectedTime) {
-      const date = selectedDate.toLocaleDateString();
-      const time = selectedTime;
-      notify(date, time);
+  const handleSubmit = async () => {
+    if (selectedDate && selectedTime && topic.trim()) {
+      const data = {
+        date: selectedDate.toLocaleDateString(),
+        time: selectedTime,
+        topic,
+      };
+      try {
+        await scheduleInterview(data, navigate, setToastMessage, setToastType);
+        setToastMessage("Interview successfully scheduled.");
+        setToastType("success");
+      } catch (error) {
+        // The error message is already set by handleApiError
+      }
     } else {
-      notify();
+      setToastMessage("Please select a date, time slot, and enter a topic.");
+      setToastType("warning");
     }
   };
 
   return (
     <>
-      <ToastContainer />
-      <div className="flex flex-col items-center p-4 space-y-4">
-        <h2 className="text-2xl font-bold">Select a Date and Time Slot</h2>
-        <div className="bg-white shadow-md rounded-lg p-4">
-          <Calendar
-            onChange={handleDateChange}
-            value={selectedDate}
-            minDate={currentDate} // Disable past dates
-            maxDate={maxDate} // Disable dates beyond 14 days
+      <div className="flex flex-col sm:flex-row justify-center items-center space-y-8 sm:space-y-0 sm:space-x-8 py-8 px-4 sm:px-8">
+        {/* Left Section - Interview Options (Stacked on top for small/medium screens) */}
+        <div className="flex flex-col items-start w-full sm:w-1/3 p-6 bg-white shadow-lg rounded-lg space-y-6">
+          <h2 className="text-3xl font-semibold text-gray-700">
+            Interview Options
+          </h2>
+          <input
+            type="text"
+            value={topic}
+            onChange={handleTopicChange}
+            placeholder="Enter Topic"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
 
-        <div className="w-64">
-          <select
-            value={selectedTime}
-            onChange={handleTimeChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-          >
-            <option value="" disabled>
-              Select a Time Slot
-            </option>
-            {Array.isArray(timeSlots) && timeSlots.length > 0 ? (
-              timeSlots.map((slot, index) => (
+        {/* Right Section - Date and Time Picker */}
+        <div className="flex flex-col items-center w-full sm:w-1/2 p-6 bg-white shadow-lg rounded-lg space-y-6">
+          <h2 className="text-3xl font-semibold text-gray-700">
+            Select a Date and Time Slot
+          </h2>
+
+          {/* Calendar Component */}
+          <div className="bg-white shadow-md rounded-lg p-4 m-4">
+            <Calendar
+              onChange={handleDateChange}
+              value={selectedDate}
+              minDate={currentDate}
+              maxDate={maxDate}
+            />
+          </div>
+
+          {/* Time Slot Selection */}
+          <div className="w-full">
+            <select
+              value={selectedTime}
+              onChange={handleTimeChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none mt-4"
+            >
+              <option value="" disabled>
+                Select a Time Slot
+              </option>
+              {timeSlots.map((slot, index) => (
                 <option key={index} value={slot}>
                   {slot}
                 </option>
-              ))
-            ) : (
-              <option disabled>No available time slots</option>
-            )}
-          </select>
-        </div>
-
-        <button
-          onClick={handleSubmit}
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-        >
-          Confirm Selection
-        </button>
-
-        {selectedDate && selectedTime && (
-          <div className="text-center mt-4">
-            <p className="text-lg font-medium">
-              Selected Date: {selectedDate.toLocaleDateString()}
-            </p>
-            <p className="text-lg font-medium">
-              Selected Time Slot: {selectedTime}
-            </p>
+              ))}
+            </select>
           </div>
-        )}
+
+          {/* Confirm Button */}
+          <button
+            onClick={handleSubmit}
+            className="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-300 mt-6"
+          >
+            Confirm Selection
+          </button>
+
+          {/* Confirmation Info */}
+          {selectedDate && selectedTime && topic && (
+            <div className="text-center mt-6 text-lg font-medium text-gray-600">
+              <p>Selected Date: {selectedDate.toLocaleDateString()}</p>
+              <p>Selected Time Slot: {selectedTime}</p>
+              <p>Topic: {topic}</p>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Show the Toast component */}
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          setToastMessage={setToastMessage}
+        />
+      )}
     </>
   );
 };

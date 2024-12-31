@@ -1,43 +1,38 @@
 import mongoose, { Schema } from "mongoose";
-import { Student } from "./student.model.js"; // Reference to the Student model
-import { Mentor } from "./mentor.model.js"; // Reference to the Mentor model
+import { User } from "./user.model.js";
 
 const interviewSchema = new Schema(
   {
     student: {
       type: Schema.Types.ObjectId,
-      ref: "Student", // Reference to the Student model
+      ref: "User",
       required: true,
     },
     mentor: {
       type: Schema.Types.ObjectId,
-      ref: "Mentor", // Reference to the Mentor model
-      required: true,
+      ref: "User",
+      required: false,
     },
     scheduledDate: {
       type: Date,
-      required: true, // The date and time the interview is scheduled for
+      required: true,
     },
     status: {
       type: String,
-      enum: ["Scheduled", "Completed", "Cancelled"],
-      default: "Scheduled", // Default status is "Scheduled"
+      enum: ["Scheduled", "Completed", "Cancelled", "Accepted"],
+      default: "Scheduled",
     },
     feedback: {
       type: String,
-      required: false, // Feedback after the interview, optional
+      required: false,
     },
     notes: {
       type: String,
-      required: false, // Additional notes about the interview
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now, // When the interview was created
+      required: true,
     },
   },
   {
-    timestamps: true, // Automatically adds `createdAt` and `updatedAt` fields
+    timestamps: true,
   }
 );
 

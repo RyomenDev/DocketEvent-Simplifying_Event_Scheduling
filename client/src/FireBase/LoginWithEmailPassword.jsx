@@ -7,7 +7,7 @@ import {
 } from "firebase/auth";
 import { auth } from "./firebase-config";
 import { useNavigate } from "react-router-dom";
-import { handleApiError } from "../utils/handleApiError";
+import { handleApiError } from "../utils/handleAuthApiError";
 import { useDispatch } from "react-redux";
 import { loginUser } from "./Login";
 

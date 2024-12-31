@@ -21,7 +21,6 @@ const userSchema = new Schema(
       type: String,
       required: false,
       default: function () {
-        // Use the 'name' field to generate the default picture URL
         return `https://ui-avatars.com/api/?name=${encodeURIComponent(
           this.name
         )}`;
@@ -48,6 +47,12 @@ const userSchema = new Schema(
       required: false,
       match: [/^\d{10}$/, "Please enter a valid 10-digit phone number"],
       default: null,
+    },
+    userType: {
+      type: String,
+      enum: ["student", "mentor"], // Enum values
+      required: true,
+      default: "student", // Default value
     },
   },
   {

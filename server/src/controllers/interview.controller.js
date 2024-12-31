@@ -1,106 +1,71 @@
-import { Patient } from "../models/patient.models.js";
+import { Interview } from "../models/interview.model.js";
 import { User } from "../models/user.model.js";
 
-const findUserByUid = async (uid) => {
-  try {
-    const user = await User.findOne({ uid });
-    if (!user) {
-      console.log("user not found");
-      return res.status(404).json({ message: "User not found" });
-    }
-    return user; // If found, return user, else return null
-  } catch (error) {
-    throw new Error("Error fetching user");
-  }
+// Helper function to parse date and time to 24-hour format
+const parseScheduledDate = (date, time) => {
+  const [month, day, year] = date.split("/").map(Number);
+  const [timePart, period] = time.split(" ");
+  const [hour, minute] = timePart.split(":").map(Number);
+
+  let hour24 = hour;
+  if (period.toUpperCase() === "PM" && hour24 !== 12) hour24 += 12;
+  if (period.toUpperCase() === "AM" && hour24 === 12) hour24 = 0;
+
+  return new Date(Date.UTC(year, month - 1, day, hour24, minute));
 };
 
-// Create a new patient
-export const createPatient = async (req, res) => {
-  //   console.log("createPatient", req.body);
-
+// Endpoint for students to schedule an interview
+export const InterviewScheduler = async (req, res) => {
   try {
-    const user = await findUserByUid(req.user.uid);
-    // console.log(user._id);
-    // Add the doctorID to the patient data
-    const patientData = {
-      ...req.body,
-      doctorId: user._id,
-    };
-    // console.log(patientData);
-    const patient = new Patient(patientData);
-    // console.log(patient);
-    await patient.save();
-    res.status(201).json(patient);
-  } catch (error) {
-    // console.log(error);
+    const { date, time, topic } = req.body.data;
+    const studentId = req.user.uid;
 
-    if (error.name === "ValidationError") {
-      const validationErrors = Object.values(error.errors).map(
-        (err) => err.message
+    // Find the student by UID
+    const student = await User.findOne({ uid: studentId });
+    const studentObjId = student._id;
+
+    if (!student || student.userType !== "student") {
+      return res.status(400).json({ message: "Invalid student ID or role." });
+    }
+
+    // Check if the student already has a scheduled or accepted interview
+    const existingInterview = await Interview.findOne({
+      student: studentObjId,
+      status: { $in: ["Scheduled", "Accepted"] },
+    });
+
+    if (existingInterview) {
+      console.log(
+        "existingInterview",
+        existingInterview?.scheduledDate?.toLocaleString()
       );
-      //   console.log(validationErrors);
-      return res.status(400).json({ error: validationErrors });
+      return res.status(400).json({
+        message: `You already have an interview scheduled or accepted on ${existingInterview?.scheduledDate?.toLocaleString()}`,
+      });
     }
-    res.status(400).json({ error: error.message });
+
+    // Parse and format the scheduled date
+    const scheduledDate = parseScheduledDate(date, time);
+
+    // Create a new interview instance
+    const interview = new Interview({
+      student: studentObjId,
+      scheduledDate,
+      status: "Scheduled",
+      notes: topic,
+    });
+
+    // Save the interview to the database
+    await interview.save();
+
+    // Respond with success
+    res
+      .status(201)
+      .json({ message: "Interview scheduled successfully.", interview });
+  } catch (err) {
+    console.error("Error scheduling interview:", err);
+    res
+      .status(500)
+      .json({ message: "Error scheduling interview.", error: err.message });
   }
 };
-
-// Get all patients for a specific doctor
-export const getPatientsByDoctor = async (req, res) => {
-  //   console.log("sending patient");
-  try {
-    const user = await findUserByUid(req.user.uid);
-    const patients = await Patient.find({ doctorId: user._id });
-    res.status(200).json(patients);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
-
-// Update a specific patient's details
-export const updatePatient = async (req, res) => {
-  //   console.log("updating");
-  try {
-    const updatedPatient = await Patient.findByIdAndUpdate(
-      req.params.patientId,
-      req.body,
-      { new: true }
-    );
-    if (!updatedPatient) {
-      return res.status(404).json({ message: "Patient not found" });
-    }
-    res.status(200).json(updatedPatient);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
-
-// Delete a specific patient
-export const deletePatient = async (req, res) => {
-  //   console.log("deleting");
-
-  try {
-    const deletedPatient = await Patient.findByIdAndDelete(
-      req.params.patientId
-    );
-    if (!deletedPatient) {
-      return res.status(404).json({ message: "Patient not found" });
-    }
-    res.status(200).json({ message: "Patient deleted successfully" });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
-
-// Get a specific patient by ID
-// export const getPatientById = async (req, res) => {
-//   try {
-//     const patient = await Patient.findById(req.params.patientId);
-//     if (!patient) {
-//       return res.status(404).json({ message: "Patient not found" });
-//     }
-//     res.status(200).json(patient);
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// };

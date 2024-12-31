@@ -4,14 +4,12 @@ import { getIdToken } from "firebase/auth";
 // Function to get the Firebase token
 export const getFirebaseToken = async () => {
   try {
-    console.log("checking token");
+    // console.log("checking token");
 
     // Check if the token exists in localStorage or sessionStorage
     const localStorageToken = localStorage.getItem("firebase_token");
     const sessionStorageToken = sessionStorage.getItem("firebase_token");
-
-    // console.log("TOKEN-localStorage", sessionStorageToken);
-    // console.log("TOKEN-sessionStorage", localStorageToken);
+    // console.log(localStorageToken, sessionStorageToken);
 
     // Return token from storage if it exists
     if (localStorageToken) {
@@ -23,8 +21,11 @@ export const getFirebaseToken = async () => {
 
     // If no token is found in storage, fetch from Firebase
     const user = auth.currentUser;
+    // console.log("user", user);
+
     if (user) {
       const token = await getIdToken(user);
+      //   console.log("token", token);
 
       // Store the token in both localStorage and sessionStorage for future use
       localStorage.setItem("firebase_token", token);

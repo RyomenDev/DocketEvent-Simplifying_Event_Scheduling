@@ -1,3 +1,4 @@
 import { loginWithFirebaseToken } from "./authApi.jsx";
+import { scheduleInterview, getUserInterviews } from "./interviewApi.jsx";
 
-export { loginWithFirebaseToken };
+export { loginWithFirebaseToken, scheduleInterview, getUserInterviews };

@@ -1,15 +1,11 @@
+// auth.routes.js
 import express from "express";
-const router = express.Router();
 import { verifyToken } from "../middlewares/auth.middleware.js";
+import { InterviewScheduler } from "../controllers/interview.controller.js"; // Import the loginUser controller
 
-// import {
-//   UserViewProfileController,
-//   UserUpdateProfileController,
-// } from "../controllers/user.controller.js";
-// import { UserSubscription } from "../controllers/subscription.controller.js";
+const router = express.Router();
 
-// router.get("/profile", verifyToken, UserViewProfileController);
-// router.put("/update-profile", verifyToken, UserUpdateProfileController);
-// router.put("/subscription", verifyToken, UserSubscription);
+// Protected Route - Login Route
+router.post("/login-with-firebase", verifyToken, InterviewScheduler); // Calls the loginUser controller
 
 export default router;

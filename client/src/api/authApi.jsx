@@ -1,11 +1,11 @@
 import axios from "axios";
 import conf from "../conf/conf.jsx";
-import { handleApiError } from "../utils/handleApiError";
+import { handleApiError } from "../utils/handleAuthApiError";
 import { getHeaders } from "../utils/authUtils";
+import { refreshToken } from "../FireBase/RefreshIdToken";
 
 // Server base URL
 const SERVER_API_URL = conf.SERVER_API_URL;
-// const API_URL = `${SERVER_API_URL}/auth`;
 const FIREBASE_API_URL = `${SERVER_API_URL}/auth`;
 
 // Function to send Firebase token for login
@@ -14,23 +14,38 @@ export const loginWithFirebaseToken = async (
   navigate,
   userRole
 ) => {
-  try {
-    const headers = await getHeaders();
-    const response = await axios.post(
-      `${FIREBASE_API_URL}/login-with-firebase`,
-      { userRole },
-      {
-        headers,
-      }
-    );
-    console.log(response);
+  let attempt = 0;
+  const maxRetries = 3;
 
-    // return response.data;
-  } catch (error) {
-    // console.error("Error logging in with Firebase token:", error);
-    handleApiError(error, navigate);
-    // throw error; // Throw the error to handle it in the component
-  }
+  const headers = await getHeaders();
+
+  const sendLoginRequest = async () => {
+    try {
+      const response = await axios.post(
+        `${FIREBASE_API_URL}/login-with-firebase`,
+        { userRole },
+        {
+          headers,
+        }
+      );
+      //   console.log("logged in", response);
+      return response.data;
+    } catch (error) {
+      if (error.response?.status === 401 && attempt < maxRetries) {
+        console.log(`Token expired. Retrying... Attempt ${attempt + 1}`);
+        attempt += 1;
+        const newToken = await refreshToken();
+        if (newToken) {
+          headers.Authorization = `Bearer ${newToken}`; // Update the Authorization header
+          return sendLoginRequest(); // Retry the login request
+        }
+      }
+      handleApiError(error, navigate);
+      // throw error;
+    }
+  };
+
+  return sendLoginRequest(); // Initial request attempt
 };
 
 // Function for traditional login

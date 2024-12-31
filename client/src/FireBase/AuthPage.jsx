@@ -87,9 +87,10 @@ const AuthPage = () => {
             onClick={() => setIsSignUp(!isSignUp)}
             className="text-blue-500 hover:text-blue-600 underline"
           >
-            {isSignUp
-              ? "Already have an account? Login here"
-              : "Don't have an account? Sign up here"}
+            {role === "student" &&
+              (isSignUp
+                ? "Already have an account? Login here"
+                : "Don't have an account? Sign up here")}
           </button>
         </div>
       </div>

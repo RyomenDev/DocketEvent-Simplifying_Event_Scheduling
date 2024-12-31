@@ -1,5 +1,5 @@
 import LoginPage from "./LoginPage";
 import NotFoundPage from "./Errors/NotFoundPage";
-import HomePage from "./HomePage";
+import DockerEventPage from "./DockerEventPage.jsx"
 
-export { LoginPage, NotFoundPage, HomePage };
+export { LoginPage, NotFoundPage, DockerEventPage };

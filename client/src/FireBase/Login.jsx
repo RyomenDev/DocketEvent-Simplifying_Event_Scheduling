@@ -1,6 +1,6 @@
 import { loginWithFirebaseToken } from "../api";
 import { login as authLogin } from "../store/authSlice";
-import { handleApiError } from "../utils/handleApiError";
+import { handleApiError } from "../utils/handleAuthApiError";
 
 export const loginUser = async (
   firebase_Token,
@@ -21,19 +21,21 @@ export const loginUser = async (
       navigate,
       userRole
     );
+    // console.log(data);
 
     if (data && data.user) {
-      console.log(data);
+      //   console.log(data);
 
-      // Dispatch login action to Redux
-      //   dispatch(authLogin(data.user));
+      //   Dispatch login action to Redux/
+      dispatch(authLogin(data.user));
 
-      //   // Store user data in localStorage
-      //   localStorage.setItem("user", JSON.stringify(data.user));
-      //   localStorage.setItem("token", data.token);
+      // Store user data in localStorage
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("firebase_token", firebase_Token);
+      sessionStorage.setItem("firebase_token", firebase_Token);
 
-      //   // Navigate to home or dashboard
-      //   navigate("/");
+      // Navigate to home or dashboard
+      navigate("/");
     } else {
       setErrorMessage("Failed to login.");
     }
